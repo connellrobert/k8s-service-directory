@@ -8,7 +8,7 @@ The service directory is available as a Helm chart in GitHub Container Registry 
 
 1. Add the Helm repository:
 ```bash
-helm repo add service-directory oci://ghcr.io/connellrobert/k8s-service-directory
+helm pull oci://ghcr.io/connellrobert/k8s-service-directory/k8s-service-catalog
 helm repo update
 ```
 
