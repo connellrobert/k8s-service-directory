@@ -50,6 +50,30 @@ interface IngressMetadata {
   };
 }
 
+// Helper function to read services from JSON file
+export async function readServicesFromFile(filePath: string): Promise<IngressService[]> {
+  try {
+    const fileContent = await fs.promises.readFile(filePath, 'utf-8');
+    const services = JSON.parse(fileContent) as IngressService[];
+    
+    // Validate required fields
+    return services.filter(service => {
+      if (!service.name || !service.url) {
+        console.warn(`Skipping invalid service entry: ${JSON.stringify(service)}`);
+        return false;
+      }
+      return true;
+    });
+  } catch (error) {
+    if ((error as NodeJS.ErrnoException).code === 'ENOENT') {
+      console.warn(`Services file not found at ${filePath}`);
+      return [];
+    }
+    console.error(`Error reading services from file ${filePath}:`, error);
+    return [];
+  }
+}
+
 // Helper function to list ingress resources and extract service URLs
 export async function listIngressServices(namespace: string): Promise<IngressService[]> {
   try {
@@ -94,4 +118,27 @@ export async function listIngressServices(namespace: string): Promise<IngressSer
     console.error(`Error listing ingress services in namespace ${namespace}:`, error);
     return [];
   }
+}
+
+// Helper function to get all services from both Kubernetes and JSON file
+export async function getAllServices(namespace: string, jsonFilePath?: string): Promise<IngressService[]> {
+  const [k8sServices, fileServices] = await Promise.all([
+    listIngressServices(namespace),
+    jsonFilePath ? readServicesFromFile(jsonFilePath) : Promise.resolve([])
+  ]);
+
+  // Combine services, with file services taking precedence over k8s services with the same name
+  const serviceMap = new Map<string, IngressService>();
+  
+  // Add k8s services first
+  k8sServices.forEach(service => {
+    serviceMap.set(service.name, service);
+  });
+
+  // Override with file services
+  fileServices.forEach(service => {
+    serviceMap.set(service.name, service);
+  });
+
+  return Array.from(serviceMap.values());
 } 
