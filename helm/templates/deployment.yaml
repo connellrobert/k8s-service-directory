@@ -1,0 +1,41 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: service-directory
+  namespace: {{ .Release.Namespace }}
+  labels:
+    app: service-directory
+spec:
+  replicas: {{ .Values.replicaCount | default 1 }}
+  selector:
+    matchLabels:
+      app: service-directory
+  template:
+    metadata:
+      labels:
+        app: service-directory
+    spec:
+      serviceAccountName: service-directory
+      containers:
+      - name: service-directory
+        image: "{{ .Values.image.repository }}:{{ .Values.image.tag | default .Chart.AppVersion }}"
+        imagePullPolicy: {{ .Values.image.pullPolicy | default "IfNotPresent" }}
+        ports:
+        - containerPort: 3000
+          name: http
+        resources:
+          {{- toYaml .Values.resources | nindent 12 }}
+        env:
+        - name: NODE_ENV
+          value: {{ .Values.environment | default "production" }}
+        - name: EXTRA_SERVICES_FILE_PATH
+          value: "/config/services.json"
+        volumeMounts:
+        - name: services-config
+          mountPath: /config
+          readOnly: true
+      volumes:
+      - name: services-config
+        configMap:
+          name: service-directory-config
+          optional: true 
