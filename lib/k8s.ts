@@ -46,6 +46,7 @@ interface IngressMetadata {
     'metadata.service-catalog/description'?: string;
     'metadata.service-catalog/url'?: string;
     'metadata.service-catalog/icon'?: string;
+    'metadata.service-catalog/omit'?: string;
   };
 }
 
@@ -60,6 +61,12 @@ export async function listIngressServices(namespace: string): Promise<IngressSer
       metadata: IngressMetadata;
     }) => {
       const annotations = ingress.metadata?.annotations || {};
+      
+      // Skip if the ingress is marked to be omitted
+      if (annotations['metadata.service-catalog/omit'] === 'true') {
+        return;
+      }
+
       const displayName = annotations['metadata.service-catalog/name'];
       const description = annotations['metadata.service-catalog/description'];
       const customUrl = annotations['metadata.service-catalog/url'];
@@ -73,7 +80,7 @@ export async function listIngressServices(namespace: string): Promise<IngressSer
               name: displayName || path.backend.service.name,
               description,
               host: customUrl ? "" : host,
-              path: customUrl ? "" :path.path,
+              path: customUrl ? "" : path.path,
               url: customUrl || `https://${host}${path.path}`,
               icon: icon || ""
             });

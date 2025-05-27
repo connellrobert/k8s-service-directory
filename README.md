@@ -78,6 +78,14 @@ metadata:
     metadata.service-catalog/icon: "server"
 ```
 
+### `metadata.service-catalog/omit`
+Exclude the service from the service directory. Set to "true" to omit the service.
+```yaml
+metadata:
+  annotations:
+    metadata.service-catalog/omit: "true"
+```
+
 ### Example Ingress Resource
 
 Here's a complete example of an ingress resource with all supported annotations:
@@ -92,6 +100,8 @@ metadata:
     metadata.service-catalog/description: "A service that does amazing things"
     metadata.service-catalog/url: "https://custom-domain.com/service"
     metadata.service-catalog/icon: "server"
+    # Set to "true" to exclude this service from the directory
+    # metadata.service-catalog/omit: "true"
 spec:
   rules:
     - host: example.com
