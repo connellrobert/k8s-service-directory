@@ -1,5 +1,5 @@
-import ServiceDirectory from "../service-directory"
+import { ServiceCatalog } from "./service-catalog"
 
 export default function Page() {
-  return <ServiceDirectory />
+  return <ServiceCatalog />
 }

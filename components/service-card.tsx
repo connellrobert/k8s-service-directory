@@ -3,21 +3,38 @@ import { ExternalLink } from "lucide-react"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
 import { Badge } from "@/components/ui/badge"
 import { Button } from "@/components/ui/button"
+import Image from "next/image"
+import { ServiceStatus } from "@/lib/types"
 
 interface ServiceCardProps {
   name: string
-  description: string
+  description?: string
   url: string
-  icon: React.ReactNode
+  icon: React.ReactNode | string
   category: string
-  status: "online" | "offline" | "maintenance"
+  status: ServiceStatus
 }
 
 export function ServiceCard({ name, description, url, icon, category, status }: ServiceCardProps) {
   const statusColors = {
     online: "bg-green-500",
     offline: "bg-red-500",
-    maintenance: "bg-yellow-500",
+    unknown: "bg-yellow-500",
+  }
+
+  const renderIcon = () => {
+    if (typeof icon === 'string') {
+      return (
+        <Image
+          src={icon}
+          alt={`${name} icon`}
+          width={20}
+          height={20}
+          className="object-contain"
+        />
+      )
+    }
+    return icon
   }
 
   return (
@@ -26,7 +43,7 @@ export function ServiceCard({ name, description, url, icon, category, status }: 
         <div className="flex items-start justify-between">
           <div className="flex items-center gap-3">
             <div className="p-2 rounded-lg bg-muted group-hover:bg-primary group-hover:text-primary-foreground transition-colors">
-              <Image src={icon} alt={name} width={24} height={24} />
+              {renderIcon()}
             </div>
             <div>
               <CardTitle className="text-lg">{name}</CardTitle>

@@ -1,174 +1,54 @@
-"use client"
+'use client'
 
-import { useState, useMemo } from "react"
-import {
-  Search,
-  Server,
-  Database,
-  Shield,
-  BarChart3,
-  GitBranch,
-  FileText,
-  Users,
-  Settings,
-  Zap,
-  Monitor,
-  Cloud,
-} from "lucide-react"
+import { SidebarInset, SidebarTrigger } from "@/components/ui/sidebar"
+import { ServiceSidebar } from "@/components/service-sidebar"
+import { SidebarProvider } from "@/components/ui/sidebar"
+import { Service } from "@/lib/types"
+import { useMemo } from "react"
+
+import { useState } from "react"
+
+import { useEffect } from "react"
+import { ServiceStats } from "@/components/service-stats"
+import { Search } from "lucide-react"
 import { Input } from "@/components/ui/input"
 import { Button } from "@/components/ui/button"
-import { ServiceCard } from "./components/service-card"
-import { ServiceStats } from "./components/service-stats"
-import { SidebarProvider, SidebarInset, SidebarTrigger } from "@/components/ui/sidebar"
-import { ServiceSidebar } from "./components/service-sidebar"
+import { ServiceCard } from "@/components/service-card"
+import { getK8sServices } from "@/app/actions"
 
-const services = [
-  {
-    id: 1,
-    name: "Grafana",
-    description: "Monitoring and observability platform for metrics, logs, and traces",
-    url: "https://grafana.internal.company.com",
-    icon: <BarChart3 className="h-5 w-5" />,
-    category: "Monitoring",
-    status: "online" as const,
-  },
-  {
-    id: 2,
-    name: "Jenkins",
-    description: "Continuous integration and deployment automation server",
-    url: "https://jenkins.internal.company.com",
-    icon: <GitBranch className="h-5 w-5" />,
-    category: "CI/CD",
-    status: "online" as const,
-  },
-  {
-    id: 3,
-    name: "Confluence",
-    description: "Team collaboration and documentation platform",
-    url: "https://confluence.internal.company.com",
-    icon: <FileText className="h-5 w-5" />,
-    category: "Documentation",
-    status: "maintenance" as const,
-  },
-  {
-    id: 4,
-    name: "LDAP Directory",
-    description: "Centralized user authentication and directory services",
-    url: "https://ldap.internal.company.com",
-    icon: <Users className="h-5 w-5" />,
-    category: "Authentication",
-    status: "online" as const,
-  },
-  {
-    id: 5,
-    name: "PostgreSQL Admin",
-    description: "Database administration and management interface",
-    url: "https://pgadmin.internal.company.com",
-    icon: <Database className="h-5 w-5" />,
-    category: "Database",
-    status: "online" as const,
-  },
-  {
-    id: 6,
-    name: "Vault",
-    description: "Secrets management and encryption service",
-    url: "https://vault.internal.company.com",
-    icon: <Shield className="h-5 w-5" />,
-    category: "Security",
-    status: "online" as const,
-  },
-  {
-    id: 7,
-    name: "Prometheus",
-    description: "Time series database and monitoring system",
-    url: "https://prometheus.internal.company.com",
-    icon: <Monitor className="h-5 w-5" />,
-    category: "Monitoring",
-    status: "online" as const,
-  },
-  {
-    id: 8,
-    name: "Kubernetes Dashboard",
-    description: "Web-based user interface for Kubernetes clusters",
-    url: "https://k8s-dashboard.internal.company.com",
-    icon: <Cloud className="h-5 w-5" />,
-    category: "Infrastructure",
-    status: "offline" as const,
-  },
-  {
-    id: 9,
-    name: "Elasticsearch",
-    description: "Search and analytics engine for log data",
-    url: "https://elasticsearch.internal.company.com",
-    icon: <Search className="h-5 w-5" />,
-    category: "Search",
-    status: "online" as const,
-  },
-  {
-    id: 10,
-    name: "Redis Admin",
-    description: "In-memory data structure store management",
-    url: "https://redis.internal.company.com",
-    icon: <Zap className="h-5 w-5" />,
-    category: "Cache",
-    status: "online" as const,
-  },
-  {
-    id: 11,
-    name: "Nexus Repository",
-    description: "Artifact repository manager for build artifacts",
-    url: "https://nexus.internal.company.com",
-    icon: <Server className="h-5 w-5" />,
-    category: "Repository",
-    status: "online" as const,
-  },
-  {
-    id: 12,
-    name: "System Config",
-    description: "Centralized system configuration management",
-    url: "https://config.internal.company.com",
-    icon: <Settings className="h-5 w-5" />,
-    category: "Configuration",
-    status: "maintenance" as const,
-  },
-]
+export const ServiceCatalog = () => {
 
-const categories = [
-  "All",
-  "Monitoring",
-  "CI/CD",
-  "Documentation",
-  "Authentication",
-  "Database",
-  "Security",
-  "Infrastructure",
-  "Search",
-  "Cache",
-  "Repository",
-  "Configuration",
-]
-
-export default function ServiceDirectory() {
   const [searchTerm, setSearchTerm] = useState("")
   const [selectedCategory, setSelectedCategory] = useState("All")
+  const [services, setServices] = useState<Service[]>([])
+
+  useEffect(() => {
+    getK8sServices().then(setServices)
+  }, [getK8sServices])
+
+
+  const categories = useMemo(() => {
+    const uniqueCategories = new Set(services.map(service => service.category))
+    return ["All", ...Array.from(uniqueCategories)]
+  }, [services])
 
   const filteredServices = useMemo(() => {
     return services.filter((service) => {
       const matchesSearch =
         service.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
-        service.description.toLowerCase().includes(searchTerm.toLowerCase())
+        (service.description?.toLowerCase() ?? "").includes(searchTerm.toLowerCase())
       const matchesCategory = selectedCategory === "All" || service.category === selectedCategory
       return matchesSearch && matchesCategory
     })
-  }, [searchTerm, selectedCategory])
+  }, [searchTerm, selectedCategory, services])
 
   const stats = useMemo(() => {
     const total = services.length
     const online = services.filter((s) => s.status === "online").length
     const offline = services.filter((s) => s.status === "offline").length
-    const maintenance = services.filter((s) => s.status === "maintenance").length
+    const maintenance = services.filter((s) => s.status === "unknown").length
     return { total, online, offline, maintenance }
-  }, [])
+  }, [services])
 
   const serviceCounts = useMemo(() => {
     const counts: Record<string, number> = { All: services.length }
@@ -176,7 +56,7 @@ export default function ServiceDirectory() {
       counts[category] = services.filter((service) => service.category === category).length
     })
     return counts
-  }, [])
+  }, [categories, services])
 
   return (
     <SidebarProvider defaultOpen={true}>
@@ -251,7 +131,7 @@ export default function ServiceDirectory() {
                   <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
                     {filteredServices.map((service) => (
                       <ServiceCard
-                        key={service.id}
+                        key={service.name}
                         name={service.name}
                         description={service.description}
                         url={service.url}
