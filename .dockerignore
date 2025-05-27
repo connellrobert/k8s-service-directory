@@ -1,2 +1,5 @@
 .pnpm-store
 node_modules
+helm
+.devcontainer
+.next
