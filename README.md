@@ -2,45 +2,78 @@
 
 A service directory application that discovers and displays services from Kubernetes ingress resources and JSON configuration files.
 
-## Service Account Setup
+## Deployment
 
-The application requires a service account with permissions to list ingress resources. Here's how to set it up:
+The service directory is available as a Helm chart in GitHub Container Registry (GHCR). To deploy it:
+
+1. Add the Helm repository:
+```bash
+helm repo add service-directory oci://ghcr.io/connellrobert/charts
+helm repo update
+```
+
+2. Update the values file:
+```bash
+helm show values service-directory/k8s-service-catalog > catalog.values.yaml
+```
+
+3. Install the chart:
+```bash
+helm install service-directory service-directory/service-directory \
+  --namespace service-directory \
+  --create-namespace -f catalog.values.yaml
+```
+
+### Configuration
+
+The following values can be configured:
 
 ```yaml
-# service-account.yaml
-apiVersion: v1
-kind: ServiceAccount
-metadata:
-  name: service-directory
-  namespace: default
----
-apiVersion: rbac.authorization.k8s.io/v1
-kind: ClusterRole
-metadata:
-  name: service-directory
-rules:
-- apiGroups: ["networking.k8s.io"]
-  resources: ["ingresses"]
-  verbs: ["list", "get"]
----
-apiVersion: rbac.authorization.k8s.io/v1
-kind: ClusterRoleBinding
-metadata:
-  name: service-directory
-subjects:
-- kind: ServiceAccount
-  name: service-directory
-  namespace: default
-roleRef:
-  kind: ClusterRole
-  name: service-directory
-  apiGroup: rbac.authorization.k8s.io
+# Default values
+replicaCount: 1
+
+image:
+  repository: ghcr.io/<your-username>/service-directory
+  tag: latest
+  pullPolicy: IfNotPresent
+
+environment: production
+
+resources:
+  limits:
+    cpu: 500m
+    memory: 512Mi
+  requests:
+    cpu: 100m
+    memory: 128Mi
+
+service:
+  type: ClusterIP
+  port: 80
+
+ingress:
+  enabled: true
+  annotations:
+    kubernetes.io/ingress.class: nginx
+  hosts:
+    - host: service-directory.example.com
+      paths:
+        - path: /
+          pathType: Prefix
+  tls:
+    - secretName: service-directory-tls
+      hosts:
+        - service-directory.example.com
+
+# Custom services to be mounted as a ConfigMap
+services:
+  - name: "Service Directory"
+    description: "Internal service directory and catalog"
+    url: "https://service-directory.example.com"
+    icon: "search"
+    category: "Tools"
 ```
 
-Apply the configuration:
-```bash
-kubectl apply -f service-account.yaml
-```
 
 ## Service Configuration
 
@@ -156,6 +189,7 @@ spec:
 - Node.js
 - pnpm
 - Access to a Kubernetes cluster
+- Access to a Docker compatible CLI
 
 ### Installation
 ```bash
