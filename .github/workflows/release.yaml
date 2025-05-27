@@ -86,4 +86,4 @@ jobs:
           
           # Push to GHCR
           echo ${{ secrets.GITHUB_TOKEN }} | helm registry login ${{ env.REGISTRY }} -u ${{ github.actor }} --password-stdin
-          helm push $CHART_FILE oci://${{ env.REGISTRY }}/${{ github.repository_owner }} 
+          helm push $CHART_FILE oci://${{ env.REGISTRY }}/${{ github.repository_owner }}/charts 

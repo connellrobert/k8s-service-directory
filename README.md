@@ -6,20 +6,14 @@ A service directory application that discovers and displays services from Kubern
 
 The service directory is available as a Helm chart in GitHub Container Registry (GHCR). To deploy it:
 
-1. Add the Helm repository:
+1. Update the values file:
 ```bash
-helm pull oci://ghcr.io/connellrobert/k8s-service-directory/k8s-service-catalog
-helm repo update
-```
-
-2. Update the values file:
-```bash
-helm show values service-directory/k8s-service-catalog > catalog.values.yaml
+helm show values oci://ghcr.io/connellrobert/service-directory/charts/k8s-service-catalog > catalog.values.yaml
 ```
 
 3. Install the chart:
 ```bash
-helm install service-directory service-directory/service-directory \
+helm install service-directory oci://ghcr.io/connellrobert/k8s-service-directory/charts/k8s-service-catalog \
   --namespace service-directory \
   --create-namespace -f catalog.values.yaml
 ```
