@@ -5,14 +5,14 @@ interface ServiceStatsProps {
   totalServices: number
   onlineServices: number
   offlineServices: number
-  maintenanceServices: number
+  unknownServices: number
 }
 
 export function ServiceStats({
   totalServices,
   onlineServices,
   offlineServices,
-  maintenanceServices,
+  unknownServices,
 }: ServiceStatsProps) {
   return (
     <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-4">
@@ -38,12 +38,12 @@ export function ServiceStats({
       </Card>
       <Card>
         <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-          <CardTitle className="text-sm font-medium">Maintenance</CardTitle>
+          <CardTitle className="text-sm font-medium">Unknown</CardTitle>
           <Clock className="h-4 w-4 text-yellow-600" />
         </CardHeader>
         <CardContent>
-          <div className="text-2xl font-bold text-yellow-600">{maintenanceServices}</div>
-          <p className="text-xs text-muted-foreground">Under maintenance</p>
+          <div className="text-2xl font-bold text-yellow-600">{unknownServices}</div>
+          <p className="text-xs text-muted-foreground">Unknown status</p>
         </CardContent>
       </Card>
       <Card>

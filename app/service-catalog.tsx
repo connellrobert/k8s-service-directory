@@ -46,8 +46,8 @@ export const ServiceCatalog = () => {
     const total = services.length
     const online = services.filter((s) => s.status === "online").length
     const offline = services.filter((s) => s.status === "offline").length
-    const maintenance = services.filter((s) => s.status === "unknown").length
-    return { total, online, offline, maintenance }
+    const unknown = services.filter((s) => s.status === "unknown").length
+    return { total, online, offline, unknown }
   }, [services])
 
   const serviceCounts = useMemo(() => {
@@ -93,7 +93,7 @@ export const ServiceCatalog = () => {
                   totalServices={stats.total}
                   onlineServices={stats.online}
                   offlineServices={stats.offline}
-                  maintenanceServices={stats.maintenance}
+                  unknownServices={stats.unknown}
                 />
 
                 <div className="flex flex-col gap-4 md:flex-row md:items-center md:justify-between">
