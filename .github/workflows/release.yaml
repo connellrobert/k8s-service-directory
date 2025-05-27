@@ -10,10 +10,9 @@ on:
 env:
   REGISTRY: ghcr.io
   IMAGE_NAME: ${{ github.repository }}
-  CHART_NAME: service-directory
 
 jobs:
-  build-and-push:
+  build-and-push-image:
     runs-on: ubuntu-latest
     permissions:
       contents: read
@@ -55,16 +54,36 @@ jobs:
           cache-from: type=gha
           cache-to: type=gha,mode=max
 
+  build-and-push-chart:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      packages: write
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
       - name: Set up Helm
         uses: azure/setup-helm@v3
         with:
           version: v3.12.3
+
+      - name: Log in to the Container registry
+        uses: docker/login-action@v3
+        with:
+          registry: ${{ env.REGISTRY }}
+          username: ${{ github.actor }}
+          password: ${{ secrets.GITHUB_TOKEN }}
 
       - name: Package and push Helm chart
         run: |
           # Package the chart
           helm package helm/
           
+          # Get the chart filename
+          CHART_FILE=$(ls *.tgz)
+          
           # Push to GHCR
           echo ${{ secrets.GITHUB_TOKEN }} | helm registry login ${{ env.REGISTRY }} -u ${{ github.actor }} --password-stdin
-          helm push ${{ env.CHART_NAME }}-$VERSION.tgz oci://${{ env.REGISTRY }}/${{ github.repository_owner }}/charts 
+          helm push $CHART_FILE oci://${{ env.REGISTRY }}/${{ github.repository_owner }}/charts 
