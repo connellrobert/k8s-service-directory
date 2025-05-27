@@ -26,7 +26,7 @@ export function ServiceCard({ name, description, url, icon, category, status }: 
         <div className="flex items-start justify-between">
           <div className="flex items-center gap-3">
             <div className="p-2 rounded-lg bg-muted group-hover:bg-primary group-hover:text-primary-foreground transition-colors">
-              {icon}
+              <Image src={icon} alt={name} width={24} height={24} />
             </div>
             <div>
               <CardTitle className="text-lg">{name}</CardTitle>
